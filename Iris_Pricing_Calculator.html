@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iris Pricing Calculator — v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1F2A44; --purple:#7C5CFC; --purple-deep:#5B3FE0; --purple-tint:#EFEAFE;
+  --paper:#F7F7FB; --card:#FFFFFF; --mist:#E7E9F2; --ink-soft:#5A627A;
+  --green:#2E7D32; --green-tint:#E8F3E9; --amber:#B26A00; --amber-tint:#FFF4E0;
+  --red:#C62828; --red-tint:#FBE3E3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--navy);min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 24px 64px}
+.eyebrow{font-size:.66rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--purple-deep)}
+header.top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+h1{font-family:'Space Grotesk',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:-.01em}
+h1 .v{color:var(--purple)}
+.meta{font-size:.72rem;color:var(--ink-soft)}
+.sub{font-size:.82rem;color:var(--ink-soft);margin-bottom:26px;max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--mist);border-radius:14px;padding:22px 22px 24px}
+.panel+.panel{margin-top:18px}
+.panel h2{font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin:2px 0 16px}
+.panel .eyebrow{display:block;margin-bottom:2px}
+
+/* ---------- revenue ---------- */
+.rev-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.rev-display{font-family:'Space Grotesk',sans-serif;font-size:2.3rem;font-weight:700;font-variant-numeric:tabular-nums;min-width:150px}
+.rev-display small{font-size:1rem;font-weight:600;color:var(--ink-soft)}
+.rev-input{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--ink-soft)}
+.rev-input input{width:88px;padding:7px 9px;border:1px solid var(--mist);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;color:var(--navy)}
+.rev-input input:focus{outline:2px solid var(--purple);outline-offset:1px;border-color:var(--purple)}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--purple) var(--fill,40%),var(--mist) var(--fill,40%));margin:20px 0 6px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--purple);box-shadow:0 1px 4px rgba(31,42,68,.25)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--purple)}
+input[type=range]:focus-visible{outline:2px solid var(--purple);outline-offset:4px}
+
+/* tier rail */
+.rail{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:14px}
+.rail .seg{border:1px solid var(--mist);border-radius:9px;padding:8px 6px;text-align:center;transition:all .18s ease;background:#fff}
+.rail .seg .t{font-size:.6rem;font-weight:600;letter-spacing:.05em;color:var(--ink-soft);text-transform:uppercase}
+.rail .seg .p{font-family:'Space Grotesk',sans-serif;font-size:.92rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.rail .seg.active{background:var(--navy);border-color:var(--navy);transform:translateY(-2px)}
+.rail .seg.active .t{color:#B9A8FF}
+.rail .seg.active .p{color:#fff}
+.qualify{display:none;margin-top:12px;background:var(--red-tint);border:1px solid #F3C5C5;color:var(--red);font-size:.78rem;font-weight:600;border-radius:9px;padding:9px 12px}
+.qualify.show{display:block}
+
+/* ---------- toggles ---------- */
+.opt{display:flex;align-items:flex-start;gap:13px;padding:13px 0;border-top:1px solid var(--mist)}
+.opt:first-of-type{border-top:none}
+.switch{position:relative;flex:0 0 auto;width:42px;height:24px;margin-top:2px}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;z-index:2}
+.switch .tr{position:absolute;inset:0;background:var(--mist);border-radius:12px;transition:background .15s}
+.switch .tr::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.switch input:checked+.tr{background:var(--purple)}
+.switch input:checked+.tr::after{transform:translateX(18px)}
+.switch input:focus-visible+.tr{outline:2px solid var(--purple);outline-offset:2px}
+.opt .body{flex:1}
+.opt .name{font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opt .desc{font-size:.74rem;color:var(--ink-soft);margin-top:2px;line-height:1.45}
+.opt .price{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.92rem;font-variant-numeric:tabular-nums;white-space:nowrap;margin-top:2px}
+.tag{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:5px;padding:2.5px 6px}
+.tag.addon{background:var(--amber-tint);color:var(--amber)}
+.tag.svc{background:var(--purple-tint);color:var(--purple-deep)}
+.tag.lever{background:var(--green-tint);color:var(--green)}
+.bundle-note{display:none;margin-top:6px;font-size:.72rem;font-weight:600;color:var(--green);background:var(--green-tint);border-radius:7px;padding:6px 9px}
+.bundle-note.show{display:inline-block}
+
+/* ---------- quote card ---------- */
+.quote{position:sticky;top:20px}
+.qcard{background:var(--card);border:1px solid var(--mist);border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(31,42,68,.08)}
+.qhead{background:var(--purple-tint);padding:13px 20px;display:flex;justify-content:space-between;align-items:center}
+.qhead .eyebrow{margin:0}
+.qhead .term{font-size:.66rem;color:var(--ink-soft)}
+.qbody{padding:8px 20px 0}
+.line{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid var(--mist)}
+.line .l .n{font-size:.85rem;font-weight:600}
+.line .l .d{font-size:.7rem;color:var(--ink-soft);margin-top:1px}
+.line .amt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.line .amt small{font-size:.66rem;font-weight:500;color:var(--ink-soft)}
+.line.disc .amt{color:var(--green)}
+.line.muted{display:none}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px;background:linear-gradient(180deg,#fff, #FBFAFF)}
+.total .lbl{font-size:.85rem;font-weight:700}
+.total .lbl small{display:block;font-size:.66rem;font-weight:500;color:var(--ink-soft)}
+.total .big{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:var(--purple-deep);font-variant-numeric:tabular-nums}
+.total .big small{font-size:.85rem;color:var(--ink-soft);font-weight:600}
+.qfoot{border-top:1px solid var(--mist);padding:12px 20px 16px;background:#FCFCFE}
+.qfoot .row{display:flex;justify-content:space-between;font-size:.76rem;padding:3px 0;font-variant-numeric:tabular-nums}
+.qfoot .row .k{color:var(--ink-soft)}
+.qfoot .row .v{font-weight:600}
+.qfoot .row.hl .v{color:var(--purple-deep)}
+.savings{display:none;margin:10px 20px 0;background:var(--green-tint);color:var(--green);font-size:.75rem;font-weight:600;border-radius:8px;padding:8px 11px}
+.savings.show{display:block}
+
+/* staircase */
+.stairs{padding:16px 20px 18px;border-top:1px solid var(--mist)}
+.stairs .eyebrow{color:var(--ink-soft);margin-bottom:10px;display:block}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-items:end}
+.step{border-radius:7px 7px 3px 3px;background:var(--mist);position:relative;transition:all .2s ease}
+.step .cap{position:absolute;top:-30px;left:0;right:0;text-align:center}
+.step .cap .a{font-family:'Space Grotesk',sans-serif;font-size:.74rem;font-weight:700;font-variant-numeric:tabular-nums;display:block}
+.step .cap .b{font-size:.56rem;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase}
+.step.on{background:var(--purple)}
+.step.floor.on{background:var(--green)}
+.steps-wrap{padding-top:32px}
+.stairs .note{font-size:.66rem;color:var(--ink-soft);margin-top:10px;line-height:1.5}
+
+/* benchmark + copy */
+.bench{margin-top:18px;background:var(--navy);border-radius:14px;color:#fff;padding:18px 20px}
+.bench .eyebrow{color:#B9A8FF;display:block;margin-bottom:10px}
+.bench .row{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;font-variant-numeric:tabular-nums}
+.bench .row .k{color:#AEB6CC}
+.bench .row .v{font-weight:600}
+.bench .ok{color:#7BD389;font-weight:700}
+.bench .warn{color:#FFB35C;font-weight:700}
+button.copy{margin-top:18px;width:100%;font:inherit;font-weight:600;font-size:.85rem;background:var(--purple);color:#fff;border:none;border-radius:10px;padding:13px;cursor:pointer;transition:background .15s}
+button.copy:hover{background:var(--purple-deep)}
+button.copy:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+button.copy.done{background:var(--green)}
+
+/* guardrails */
+.rails-foot{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gr{background:var(--card);border:1px solid var(--mist);border-left:3px solid var(--purple);border-radius:10px;padding:12px 14px;font-size:.73rem;color:var(--ink-soft);line-height:1.5}
+.gr b{color:var(--navy);display:block;margin-bottom:2px;font-size:.76rem}
+.gr.red{border-left-color:var(--red)}
+.gr.green{border-left-color:var(--green)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Iris Pricing Calculator <span class="v">v1</span></h1>
+    <span class="meta">Built on win/loss analysis of 122 won · 933 lost deals — Jun 2026</span>
+  </header>
+  <p class="sub">Set the customer's annual revenue, configure the stack, and pull the two discount levers. List prices are the anchor — the levers are the only path down, and the floor is where Drew's targets live.</p>
+
+  <div class="grid">
+    <div><!-- LEFT: configuration -->
+      <section class="panel">
+        <span class="eyebrow">Step 1</span>
+        <h2>Customer annual revenue</h2>
+        <div class="rev-row">
+          <div class="rev-display" id="revDisplay">$25M</div>
+          <label class="rev-input">$<input type="number" id="revNum" min="0.1" max="500" step="0.5" value="25">M — type exact</label>
+        </div>
+        <input type="range" id="revSlider" min="0" max="1000" value="520" aria-label="Customer annual revenue slider">
+        <div class="rail" id="tierRail"></div>
+        <div class="qualify" id="qualifyMsg">⚠ Sub-$1M revenue — historical win rate is 3.1%. Qualify out or route to self-serve; do not discount to chase.</div>
+      </section>
+
+      <section class="panel">
+        <span class="eyebrow">Step 2</span>
+        <h2>Configure the stack</h2>
+        <div class="opt">
+          <div class="switch"><input type="checkbox" id="modInv" aria-label="Inventory module"><span class="tr"></span></div>
+          <div class="body">
+            <div class="name">Inventory Module <span class="tag addon">Add-on</span></div>
+            <div class="desc">SKU-level demand &amp; buy planning, 3PL &amp; in-transit visibility, open-to-buy by channel.</div>
+          </div>
+          <div class="price" id="priceInv">+$1,500</div>
+        </div>
+        <div class="opt">
+          <div class="switch"><input type="checkbox" id="modCf" aria-label="Cash flow module"><span class="tr"></span></div>
+          <div class="body">
+            <div class="name">Cash Flow Module <span class="tag addon">Add-on</span></div>
+            <div class="desc">13-week cash bridge, payables &amp; receivables timing, scenario-driven cash forecasts.</div>
+            <span class="bundle-note" id="bundleNote">Bundle applied — both modules save $500/mo</span>
+          </div>
+          <div class="price" id="priceCf">+$1,500</div>
+        </div>
+        <div class="opt">
+          <div class="switch"><input type="checkbox" id="adv" aria-label="Advisory services"><span class="tr"></span></div>
+          <div class="body">
+            <div class="name">Advisory / Managed Services <span class="tag svc">Rate protected</span></div>
+            <div class="desc" id="advDesc">Dedicated CFO analyst cadence. Not discount-eligible — flex the scope, never the rate.</div>
+          </div>
+          <div class="price" id="priceAdv">+$2,000</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <span class="eyebrow">Step 3</span>
+        <h2>Discount levers <span style="font-weight:400;color:var(--ink-soft);font-size:.78rem">— software + modules only, stack to −15% max</span></h2>
+        <div class="opt">
+          <div class="switch"><input type="checkbox" id="dEom" aria-label="Sign by month end discount"><span class="tr"></span></div>
+          <div class="body">
+            <div class="name">Signs by month-end <span class="tag lever">−5%</span></div>
+            <div class="desc">Urgency lever. Expires at EOM — never re-offer after it lapses.</div>
+          </div>
+        </div>
+        <div class="opt">
+          <div class="switch"><input type="checkbox" id="dPre" aria-label="Annual prepay discount"><span class="tr"></span></div>
+          <div class="body">
+            <div class="name">Annual prepay <span class="tag lever">−10%</span></div>
+            <div class="desc">Cash-up-front lever. 12 months of software + modules paid at signing.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="quote"><!-- RIGHT: live quote -->
+      <div class="qcard">
+        <div class="qhead">
+          <span class="eyebrow">Monthly Retainer</span>
+          <span class="term">12-month term · 90-day termination</span>
+        </div>
+        <div class="qbody">
+          <div class="line">
+            <div class="l"><div class="n">Base Engagement</div><div class="d" id="qTier">Software subscription — $10M–$30M tier</div></div>
+            <div class="amt" id="qSoft">$3,000 <small>/mo</small></div>
+          </div>
+          <div class="line muted" id="qModsLine">
+            <div class="l"><div class="n" id="qModsName">Modules</div><div class="d" id="qModsDesc"></div></div>
+            <div class="amt" id="qMods">+$0 <small>/mo</small></div>
+          </div>
+          <div class="line muted" id="qAdvLine">
+            <div class="l"><div class="n">Advisory Services</div><div class="d">Billed monthly · rate not discounted</div></div>
+            <div class="amt" id="qAdv">+$0 <small>/mo</small></div>
+          </div>
+          <div class="line disc muted" id="qDiscLine">
+            <div class="l"><div class="n" id="qDiscName">Levers applied</div><div class="d">On software + modules</div></div>
+            <div class="amt" id="qDisc">−$0 <small>/mo</small></div>
+          </div>
+        </div>
+        <div class="total">
+          <div class="lbl">Total<small id="qStack">full stack</small></div>
+          <div class="big" id="qTotal">$3,000<small> /mo</small></div>
+        </div>
+        <div class="savings" id="qSave"></div>
+        <div class="qfoot">
+          <div class="row"><span class="k">Annual contract value</span><span class="v" id="qAcv">$36,000</span></div>
+          <div class="row hl muted" id="qUpfrontRow"><span class="k">Due at signing (prepaid sw + modules)</span><span class="v" id="qUpfront">—</span></div>
+          <div class="row muted" id="qAdvNoteRow"><span class="k">Advisory billed monthly alongside</span><span class="v" id="qAdvNote">—</span></div>
+        </div>
+        <div class="stairs">
+          <span class="eyebrow">Software price staircase — list is the anchor, floor is the limit</span>
+          <div class="steps-wrap"><div class="steps" id="stairSteps"></div></div>
+          <div class="note">Floor = both levers (−15%). Nothing below floor without exec sign-off. <span id="floorMatch"></span></div>
+        </div>
+      </div>
+
+      <div class="bench">
+        <span class="eyebrow">Data check — this tier's history</span>
+        <div class="row"><span class="k">Won-deal average</span><span class="v" id="bAvg">$2,429 /mo</span></div>
+        <div class="row"><span class="k">Largest deal won</span><span class="v" id="bMax">$4,000 /mo</span></div>
+        <div class="row"><span class="k">Your software quote</span><span class="v" id="bQuote">$3,000 /mo</span></div>
+        <div class="row"><span class="k">Position</span><span class="v" id="bPos">—</span></div>
+      </div>
+
+      <button class="copy" id="copyBtn">Copy quote summary</button>
+    </div>
+  </div>
+
+  <div class="rails-foot">
+    <div class="gr red"><b>The graveyard is off-limits</b>Never quote $600–$833/mo ($7.2k–$10k ARR): 415 historical losses, 1 win. Every floor in this grid clears it by design.</div>
+    <div class="gr"><b>Two levers, nothing else</b>−5% EOM and −10% prepay are the only discounts. They expire, they stack to −15%, and the floor is final.</div>
+    <div class="gr green"><b>$50M+ — anchor high, confidently</b>Winners in this band averaged $56k ARR vs $25k for losses. The cheap quote is the losing quote.</div>
+    <div class="gr"><b>Advisory flexes scope, not rate</b>If the services number must move, cut hours or cadence. A discounted rate becomes the rate forever.</div>
+  </div>
+</div>
+
+<script>
+const TIERS=[
+ {label:'< $10M',short:'<$10M',min:0,max:10,list:2500,advisory:2000,mod:1500,bundle:2500,wonAvg:1739,wonMax:4000},
+ {label:'$10M – $30M',short:'$10–30M',min:10,max:30,list:3000,advisory:2000,mod:1500,bundle:2500,wonAvg:2429,wonMax:4000},
+ {label:'$30M – $50M',short:'$30–50M',min:30,max:50,list:3500,advisory:3000,mod:1500,bundle:2500,wonAvg:2500,wonMax:4000},
+ {label:'$50M – $100M',short:'$50–100M',min:50,max:100,list:5500,advisory:3000,mod:2000,bundle:3500,wonAvg:4667,wonMax:7000},
+ {label:'$100M+',short:'$100M+',min:100,max:Infinity,list:6000,advisory:5000,mod:2000,bundle:3500,wonAvg:4100,wonMax:7000}
+];
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+const LOG_MIN=Math.log(0.5),LOG_MAX=Math.log(300);
+let revenue=25;
+
+// build tier rail
+const rail=$('tierRail');
+TIERS.forEach((t,i)=>{
+  const d=document.createElement('div');d.className='seg';d.id='seg'+i;
+  d.innerHTML=`<div class="t">${t.short}</div><div class="p">${fmt(t.list)}</div>`;
+  rail.appendChild(d);
+});
+
+function tierFor(rev){return TIERS.find(t=>rev>=t.min&&rev<t.max)||TIERS[4];}
+function revLabel(r){
+  if(r>=300)return'$300M+';
+  if(r>=100)return'$'+Math.round(r)+'M';
+  if(r>=10)return'$'+Math.round(r)+'M';
+  return'$'+(Math.round(r*10)/10)+'M';
+}
+function sliderToRev(v){return Math.exp(LOG_MIN+(v/1000)*(LOG_MAX-LOG_MIN));}
+function revToSlider(r){return Math.round(1000*(Math.log(Math.min(Math.max(r,0.5),300))-LOG_MIN)/(LOG_MAX-LOG_MIN));}
+
+function update(){
+  const t=tierFor(revenue);
+  const inv=$('modInv').checked, cf=$('modCf').checked, adv=$('adv').checked;
+  const eom=$('dEom').checked, pre=$('dPre').checked;
+  const disc=(eom?0.05:0)+(pre?0.10:0);
+
+  // revenue display + rail + qualify
+  $('revDisplay').textContent=revLabel(revenue);
+  $('revSlider').style.setProperty('--fill',($('revSlider').value/10)+'%');
+  TIERS.forEach((_,i)=>$('seg'+i).classList.toggle('active',TIERS[i]===t));
+  $('qualifyMsg').classList.toggle('show',revenue<1);
+
+  // option prices for current tier
+  $('priceInv').textContent='+'+fmt(t.mod);
+  $('priceCf').textContent='+'+fmt(t.mod);
+  $('priceAdv').textContent='+'+fmt(t.advisory);
+  $('advDesc').textContent=(t.advisory>=5000?'Senior analyst + custom scope.':t.advisory>=3000?'Dedicated CFO analyst, monthly board pack, BvA deep-dives.':'Advisory-lite: bi-weekly cadence + async Slack.')+' Not discount-eligible — flex the scope, never the rate.';
+  const bundled=inv&&cf;
+  $('bundleNote').classList.toggle('show',bundled);
+
+  // module pricing
+  const modPrice=bundled?t.bundle:((inv?t.mod:0)+(cf?t.mod:0));
+  const swm=t.list+modPrice;               // discountable base
+  const discAmt=swm*disc;
+  const swmNet=swm-discAmt;
+  const advPrice=adv?t.advisory:0;
+  const monthly=swmNet+advPrice;
+
+  // quote card
+  $('qTier').textContent='Software subscription — '+t.label+' tier';
+  $('qSoft').innerHTML=fmt(t.list)+' <small>/mo</small>';
+  $('qModsLine').classList.toggle('muted',!(inv||cf));
+  if(inv||cf){
+    $('qModsName').textContent=bundled?'Inventory + Cash Flow (bundle)':(inv?'Inventory Module':'Cash Flow Module');
+    $('qModsDesc').textContent=bundled?'Bundle rate — saves $500/mo vs separate':'Platform add-on';
+    $('qMods').innerHTML='+'+fmt(modPrice)+' <small>/mo</small>';
+  }
+  $('qAdvLine').classList.toggle('muted',!adv);
+  if(adv)$('qAdv').innerHTML='+'+fmt(advPrice)+' <small>/mo</small>';
+  $('qDiscLine').classList.toggle('muted',disc===0);
+  if(disc>0){
+    const names=[];if(eom)names.push('EOM −5%');if(pre)names.push('Prepay −10%');
+    $('qDiscName').textContent=names.join(' + ')+' = −'+Math.round(disc*100)+'%';
+    $('qDisc').innerHTML='−'+fmt(discAmt)+' <small>/mo</small>';
+  }
+  const stack=adv&&bundled?'full stack + advisory':adv?'software + advisory':bundled?'full platform':(inv||cf)?'software + module':'base software';
+  $('qStack').textContent=stack;
+  $('qTotal').innerHTML=fmt(monthly)+'<small> /mo</small>';
+  $('qAcv').textContent=fmt(monthly*12);
+  $('qSave').classList.toggle('show',disc>0);
+  if(disc>0)$('qSave').textContent='Customer saves '+fmt(discAmt*12)+'/yr vs list — and lands exactly where the model targets.';
+  $('qUpfrontRow').classList.toggle('muted',!pre);
+  $('qAdvNoteRow').classList.toggle('muted',!(pre&&adv));
+  if(pre){$('qUpfront').textContent=fmt(swmNet*12);if(adv)$('qAdvNote').textContent=fmt(advPrice)+' /mo';}
+
+  // staircase (software base only — the tier pricing story)
+  const stops=[{a:t.list,b:'List'},{a:t.list*0.95,b:'EOM −5%'},{a:t.list*0.90,b:'Prepay −10%'},{a:t.list*0.85,b:'Floor −15%'}];
+  const active=disc===0?0:disc===0.05?1:disc===0.10?2:3;
+  const steps=$('stairSteps');steps.innerHTML='';
+  stops.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='step'+(i===3?' floor':'')+(i===active?' on':'');
+    d.style.height=(26+34*(s.a/stops[0].a-0.85)/0.15)+'px';
+    d.innerHTML=`<div class="cap"><span class="a">${fmt(s.a)}</span><span class="b">${s.b}</span></div>`;
+    steps.appendChild(d);
+  });
+  $('floorMatch').textContent=(t.min===50)?'This tier\u2019s floor ('+fmt(t.list*0.85)+'/mo = $56.1k ARR) sits exactly on the won-deal average — the anchor backs into the data.':'';
+
+  // benchmark
+  $('bAvg').textContent=fmt(t.wonAvg)+' /mo';
+  $('bMax').textContent=fmt(t.wonMax)+' /mo';
+  const swEff=t.list*(1-disc);
+  $('bQuote').textContent=fmt(swEff)+' /mo'+(disc>0?' (after levers)':' (list)');
+  const pos=$('bPos');
+  if(swEff>=t.wonAvg){pos.textContent='At or above won average ✓';pos.className='v ok';}
+  else{pos.textContent='Below won avg — hold the line';pos.className='v warn';}
+}
+
+// events
+$('revSlider').addEventListener('input',e=>{revenue=sliderToRev(+e.target.value);$('revNum').value=revenue>=10?Math.round(revenue):Math.round(revenue*10)/10;update();});
+$('revNum').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0){revenue=v;$('revSlider').value=revToSlider(v);update();}});
+['modInv','modCf','adv','dEom','dPre'].forEach(id=>$(id).addEventListener('change',update));
+
+// copy summary
+$('copyBtn').addEventListener('click',()=>{
+  const t=tierFor(revenue);
+  const inv=$('modInv').checked,cf=$('modCf').checked,adv=$('adv').checked,eom=$('dEom').checked,pre=$('dPre').checked;
+  const bundled=inv&&cf,disc=(eom?0.05:0)+(pre?0.10:0);
+  const modPrice=bundled?t.bundle:((inv?t.mod:0)+(cf?t.mod:0));
+  const swm=t.list+modPrice,swmNet=swm*(1-disc),advP=adv?t.advisory:0,monthly=swmNet+advP;
+  let s=`IRIS QUOTE — ${revLabel(revenue)} revenue (${t.label} tier)\n`;
+  s+=`Base software: ${fmt(t.list)}/mo\n`;
+  if(inv||cf)s+=(bundled?`Inventory + Cash Flow bundle: +${fmt(modPrice)}/mo\n`:`${inv?'Inventory':'Cash Flow'} module: +${fmt(modPrice)}/mo\n`);
+  if(adv)s+=`Advisory services: +${fmt(advP)}/mo (not discounted)\n`;
+  if(disc>0)s+=`Levers: ${eom?'sign-by-EOM −5% ':''}${pre?'annual prepay −10%':''} → −${fmt(swm*disc)}/mo on software+modules\n`;
+  s+=`TOTAL: ${fmt(monthly)}/mo · ACV ${fmt(monthly*12)}`;
+  if(pre)s+=` · Due at signing: ${fmt(swmNet*12)}${adv?` + advisory ${fmt(advP)}/mo`:''}`;
+  navigator.clipboard.writeText(s).then(()=>{
+    const b=$('copyBtn');b.textContent='Copied ✓';b.classList.add('done');
+    setTimeout(()=>{b.textContent='Copy quote summary';b.classList.remove('done');},1600);
+  });
+});
+
+update();
+</script>
+</body>
+</html>
